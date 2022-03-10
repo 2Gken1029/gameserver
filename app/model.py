@@ -37,7 +37,7 @@ def create_user(name: str, leader_card_id: int) -> str:
             ),
             {"name": name, "token": token, "leader_card_id": leader_card_id},
         )
-        print(result)
+        # print(result)
     return token
 
 
@@ -64,8 +64,6 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
     with engine.begin() as conn:
         # TODO: 実装
         result = conn.execute(
-            text(
-                "UPDATE `user` SET  name=name, leader_card_id=leader_card_id WHERE token=token"
-            ),
-            {"name": name, "leader_card_id": leader_card_id},
+            text("UPDATE `user` SET `name`=:name,`leader_card_id`=:leader_card_id WHERE `token`=:token"),
+            {"name": name, "token": token, "leader_card_id": leader_card_id, },
         )
