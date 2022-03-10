@@ -69,8 +69,3 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
             ),
             {"name": name, "leader_card_id": leader_card_id},
         )
-    try:
-        row = result.one()
-    except NoResultFound:
-        return None
-    return SafeUser.from_orm(row)
