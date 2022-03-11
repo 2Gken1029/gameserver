@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 from . import model
 from .model import SafeUser
+from .model import LiveDifficulty, RoomInfo, RoomUser, ResultUser
 
 app = FastAPI()
 
@@ -65,3 +66,29 @@ def update(req: UserCreateRequest, token: str = Depends(get_auth_token)):
     # print(req)
     model.update_user(token, req.user_name, req.leader_card_id)
     return {}
+
+
+# Room APIs
+
+class RoomID(BaseModel):
+    room_id: int
+
+class RoomCreateRequest(BaseModel):
+    live_id: int
+    select_difficulty: LiveDifficulty
+
+class RoomListRequest(BaseModel):
+    live_id: int
+
+class RoomListResponse(BaseModel):
+    room_list: list[RoomInfo]
+
+@app.post("/room/create", response_model=RoomID)
+def room_create(req: RoomCreateRequest):
+    room_id = model.create_room(req.live_id, req.select_difficulty)
+    return RoomID(room_id=room_id)
+
+@app.post("/room/list", response_model=RoomListResponse)
+def get_room_list(req: RoomListRequest):
+    exist_rooms = model.get_room_list(req.live_id)
+    return RoomListResponse(room_list=exist_rooms)

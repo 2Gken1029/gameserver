@@ -69,3 +69,71 @@ def update_user(token: str, name: str, leader_card_id: int) -> None:
             ),
             {"name": name, "token": token, "leader_card_id": leader_card_id},
         )
+
+MAX_USER = 4
+
+class LiveDifficulty(Enum):
+    normal = 1
+    hard = 2
+
+class JoinRoomResult(Enum):
+    Ok = 1
+    RoomFull = 2
+    Disbanded = 3
+    OtherError = 4
+
+class WaitRoomStatus(Enum):
+    Waiting = 1
+    LiveStart = 2
+    Dissolution = 3
+
+class RoomInfo(BaseModel):
+    room_id: int
+    live_id: int
+    joined_user_count: int
+    max_user_count: int = MAX_USER
+
+class RoomUser(BaseModel):
+    user_id: int
+    name: str
+    leader_card_id: int
+    select_difficulty: LiveDifficulty
+    is_me: bool
+    is_host: bool
+
+class ResultUser(BaseModel):
+    user_id: int
+    judge_count_list: list[int]
+    score: int
+
+def create_room(live_id: int, select_difficulty: LiveDifficulty) -> int:
+    with engine.begin() as conn:
+        result = conn.execute(
+            text(
+                "INSERT INTO `room` (live_id, select_difficulty) VALUES (:live_id, :select_difficulty)"
+            ),
+            {"live_id": live_id, "select_difficulty": select_difficulty.value},
+        )
+        room_id = result.lastrowid
+        return room_id
+
+def get_room_list(live_id: int) -> Optional[RoomInfo]:
+    exist_rooms = []
+    with engine.begin() as conn:
+        if live_id == 0:
+            result = conn.execute(
+                text(
+                    "SELECT `room_id`, `live_id`, `joined_user_count` FROM `room`"
+                ),
+            )
+        else:
+            result = conn.execute(
+                text(
+                    "SELECT `room_id`, `live_id`, `joined_user_count` FROM `room` WHERE `live_id`=:live_id"
+                ),
+                {"live_id": live_id},
+            )
+        result = result.all
+        for row in result:
+            exist_rooms.append(RoomInfo(room_id=row.room_id, live_id=row.live_id, joined_user_count=row.joined_user_count))
+        return exist_rooms
