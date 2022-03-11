@@ -104,5 +104,5 @@ def get_room_list(req: RoomListRequest):
 
 @app.post("/room/join", response_model=RoomJoinResponse)
 def room_join(req: RoomJoinRequest):
-    join_room_result = model.join_room(req.room_id, req.select_difficulty):
+    join_room_result = model.join_room(req.room_id, req.select_difficulty)
     return RoomJoinResponse(join_room_result=join_room_result)

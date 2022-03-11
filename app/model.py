@@ -153,7 +153,7 @@ def join_room(room_id: int, select_difficulty: LiveDifficulty) -> JoinRoomResult
                     text(
                         "UPDATE `room` SET `joined_user_count`=:plus_user_count WHERE `room_id`=:room_id AND `select_difficulty`=:select_difficulty"
                     ),
-                    {"plus_user_count":result.joined_user_count+1 "room_id":room_id, "select_difficulty":select_difficulty.value},
+                    {"plus_user_count":result.joined_user_count+1, "room_id":room_id, "select_difficulty":select_difficulty.value},
                 )
                 return JoinRoomResult.Ok
             else:

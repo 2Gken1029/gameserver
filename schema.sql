@@ -14,4 +14,4 @@ CREATE TABLE `room` (
   `select_difficulty` int DEFAULT NULL,
   `joined_user_count` int DEFAULT NULL,
   PRIMARY KEY (`room_id`)
-)
+);
