@@ -133,7 +133,30 @@ def get_room_list(live_id: int) -> Optional[RoomInfo]:
                 ),
                 {"live_id": live_id},
             )
-        result = result.all
+        result = result.all()
         for row in result:
             exist_rooms.append(RoomInfo(room_id=row.room_id, live_id=row.live_id, joined_user_count=row.joined_user_count))
         return exist_rooms
+
+def join_room(room_id: int, select_difficulty: LiveDifficulty) -> JoinRoomResult:
+    with engine.begin() as conn:
+        result = conn.execute(
+            text(
+                "SELECT `joined_user_count`, FROM `room` WHERE `room_id`=:room_id AND `select_difficulty`=:select_difficulty"
+            ),
+            {"room_id":room_id, "select_difficulty":select_difficulty.value},
+        )
+        result = result.one()
+        try:
+            if result.joined_user_count < MAX_USER:
+                conn.execute(
+                    text(
+                        "UPDATE `room` SET `joined_user_count`=:plus_user_count WHERE `room_id`=:room_id AND `select_difficulty`=:select_difficulty"
+                    ),
+                    {"plus_user_count":result.joined_user_count+1 "room_id":room_id, "select_difficulty":select_difficulty.value},
+                )
+                return JoinRoomResult.Ok
+            else:
+                return JoinRoomResult.RoomFull
+        except NoResultFound:
+            return JoinRoomResult.Disbanded
