@@ -110,9 +110,9 @@ def create_room(live_id: int, select_difficulty: LiveDifficulty) -> int:
     with engine.begin() as conn:
         result = conn.execute(
             text(
-                "INSERT INTO `room` (live_id, select_difficulty) VALUES (:live_id, :select_difficulty)"
+                "INSERT INTO `room` (live_id, select_difficulty, joined_user_count) VALUES (:live_id, :select_difficulty, :joined_user_count)"
             ),
-            {"live_id": live_id, "select_difficulty": select_difficulty.value},
+            {"live_id": live_id, "select_difficulty": select_difficulty.value, "joined_user_count":1},
         )
         room_id = result.lastrowid
         return room_id
@@ -147,7 +147,6 @@ def join_room(room_id: int, select_difficulty: LiveDifficulty) -> JoinRoomResult
             {"room_id":room_id, "select_difficulty":select_difficulty.value},
         )
         result = result.one()
-        print(result)
         try:
             if result.joined_user_count < MAX_USER:
                 conn.execute(
