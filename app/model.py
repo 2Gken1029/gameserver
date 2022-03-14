@@ -142,11 +142,12 @@ def join_room(room_id: int, select_difficulty: LiveDifficulty) -> JoinRoomResult
     with engine.begin() as conn:
         result = conn.execute(
             text(
-                "SELECT `joined_user_count`, FROM `room` WHERE `room_id`=:room_id AND `select_difficulty`=:select_difficulty"
+                "SELECT `joined_user_count` FROM `room` WHERE `room_id`=:room_id AND `select_difficulty`=:select_difficulty"
             ),
             {"room_id":room_id, "select_difficulty":select_difficulty.value},
         )
         result = result.one()
+        print(result)
         try:
             if result.joined_user_count < MAX_USER:
                 conn.execute(
