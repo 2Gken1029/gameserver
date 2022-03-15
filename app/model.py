@@ -291,5 +291,25 @@ def room_result(room_id: int) -> List[ResultUser]:
         result_user_list.append(res)
     return result_user_list
 
-def room_leave(room_id: int) -> None:
-    pass
+def room_leave(room_id: int, token: str) -> None:
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                "DELETE FROM `room_members` WHERE `token`=:token"
+            ),
+            {"token":token},
+        )
+    with engine.begin() as conn:
+        res = conn.execute(
+            text(
+                "SELECT `joined_user_count` FROM `room` WHERE `room_id`=:room_id"
+            ),
+            {"room_id":room_id},
+        )
+        room_info = res.one()
+        conn.execute(
+            text(
+                "UPDATE `room` SET `joined_user_count`=:minus_user_count WHERE `room_id`=:room_id"
+            ),
+            {"room_id":room_id, "minus_user_count":room_info.joined_user_count-1},
+        )

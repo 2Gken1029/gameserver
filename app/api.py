@@ -141,5 +141,5 @@ def room_result(req: RoomID):
     return RoomResultResponse(result_user_list=result_user_list)
 
 @app.post("/room/leave", response_model=Empty)
-def room_leave(req: RoomID):
-    model.room_leave(req.room_id)
+def room_leave(req: RoomID, token: str = Depends(get_auth_token)):
+    model.room_leave(req.room_id, token)
