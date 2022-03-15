@@ -250,13 +250,19 @@ def room_start(room_id: int, token: str) -> None:
         else:
             raise HTTPException(status_code=500)
 
+def _score_list(judge_count_list: list[int]) -> List[int]:
+    score_list = [0,0,0,0,0]
+    for i in range(len(judge_count_list)):
+        score_list[i] = judge_count_list[i]
+    return score_list
+
 def room_end(room_id: int, judge_count_list: list[int], score: int, token: str) -> None:
+    judge_count_list = _score_list(judge_count_list)
     perfect_score = judge_count_list[JudgeScore.perfect.value]
     great_score = judge_count_list[JudgeScore.great.value]
     good_score = judge_count_list[JudgeScore.good.value]
     bad_score = judge_count_list[JudgeScore.bad.value]
     miss_score = judge_count_list[JudgeScore.miss.value]
-    print(perfect_score)
     with engine.begin() as conn:
         conn.execute(
             text(
@@ -264,3 +270,26 @@ def room_end(room_id: int, judge_count_list: list[int], score: int, token: str) 
             ),
             {"score":score, "perfect":perfect_score, "great":great_score, "good":good_score, "bad":bad_score, "miss":miss_score, "room_id":room_id, "token":token},
         )
+
+def room_result(room_id: int) -> List[ResultUser]:
+    result_user_list: list[ResultUser] = []
+    with engine.begin() as conn:
+        result = conn.execute(
+            text(
+                "SELECT `user_id`, `score`, `perfect`, `great`, `good`, `bad`, `miss` FROM `room_members` WHERE  `room_id`=:room_id"
+            ),
+            {"room_id":room_id},
+        )
+    results = result.all()
+    for row in results:
+        if row.score == -1: return []
+        res = ResultUser(
+            user_id=row.user_id,
+            judge_count_list=[row.perfect, row.great, row.good, row.bad, row.miss],
+            score=row.score,
+        )
+        result_user_list.append(res)
+    return result_user_list
+
+def room_leave(room_id: int) -> None:
+    pass
