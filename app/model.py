@@ -149,8 +149,10 @@ def get_room_list(live_id: int) -> Optional[RoomInfo]:
                 {"live_id": live_id},
             )
         result = result.all()
+        print(result)
         for row in result:
             exist_rooms.append(RoomInfo(room_id=row.room_id, live_id=row.live_id, joined_user_count=row.joined_user_count))
+        print(exist_rooms)
         return exist_rooms
 
 def join_room(room_id: int, select_difficulty: LiveDifficulty, token: str) -> JoinRoomResult:
@@ -192,7 +194,7 @@ def _get_room_status(room_id: int) -> WaitRoomStatus:
             {"room_id":room_id},
         )
         try:
-            room_status = status.one()
+            room_status = status.one()[0]
             if room_status == 1:
                 return WaitRoomStatus.Waiting
             elif room_status == 2:
@@ -228,7 +230,9 @@ def _get_room_users(room_id: int, token: str) -> List[RoomUser]:
 
 def room_wait(room_id: int, token: str) -> Tuple[WaitRoomStatus, List[RoomUser]]:
     room_status = _get_room_status(room_id)
+    print(room_status)
     room_users = _get_room_users(room_id, token)
+    print(room_users)
     return (room_status, room_users)
 
 def room_start(room_id: int, token: str) -> None:
